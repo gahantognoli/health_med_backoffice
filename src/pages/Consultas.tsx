@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { api } from "../lib/axios";
 import { AlertDialog } from "radix-ui";
 import { Loading } from "../components/Loading";
+import { parseJwt } from "../lib/utils";
 
 interface Consulta {
   id: string;
@@ -20,10 +21,12 @@ export function Consultas() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const medicoId = "0db1b9ba-2d36-4ee9-8839-c6af317c8cfb"; // Todo: Obter o ID do médico logado
+    const token = localStorage.getItem("token");
+    const user = parseJwt(token!);
+    const medicoId = user.customId;
     api
       .get<Consulta[]>(
-        `/api/Consulta/ObterConsultasPendentesMedico/${medicoId}`
+        `/med/Consulta/ObterConsultasPendentesMedico/${medicoId}`
       )
       .then((response) => {
         setConsultas(response.data);
@@ -33,7 +36,7 @@ export function Consultas() {
 
   async function handleAceitarConsulta(consultaId: string) {
     try {
-      await api.patch(`/api/Consulta/Aceitar/${consultaId}`);
+      await api.patch(`/med/Consulta/Aceitar/${consultaId}`);
       setConsultas((prev) =>
         prev.map((consulta) =>
           consulta.id === consultaId
@@ -48,7 +51,7 @@ export function Consultas() {
 
   async function handleRecusarConsulta(consultaId: string) {
     try {
-      await api.patch(`/api/Consulta/Recusar/${consultaId}`);
+      await api.patch(`/med/Consulta/Recusar/${consultaId}`);
       setConsultas((prev) =>
         prev.map((consulta) =>
           consulta.id === consultaId

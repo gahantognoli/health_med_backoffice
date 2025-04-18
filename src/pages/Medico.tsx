@@ -3,6 +3,7 @@ import { api } from "../lib/axios";
 import { Loading } from "../components/Loading";
 import { AlertDialog, Dialog } from "radix-ui";
 import { useRef } from "react";
+import { parseJwt } from "../lib/utils";
 
 interface Medico {
   id: string;
@@ -45,8 +46,10 @@ export function Medico() {
   const closeButtonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
-    const medicoId = "0db1b9ba-2d36-4ee9-8839-c6af317c8cfb"; // Todo: Obter o ID do médico logado
-    api.get(`api/medico/${medicoId}`).then((response) => {
+    const token = localStorage.getItem("token");
+    const user = parseJwt(token!);
+    const medicoId = user.customId;
+    api.get(`med/medico/${medicoId}`).then((response) => {
       setMedico(response.data);
       setNome(response.data.nome);
       setValorConsulta(response.data.valorConsulta);
@@ -59,7 +62,7 @@ export function Medico() {
     try {
       e.preventDefault();
       setAtualizando(true);
-      await api.patch(`api/medico/${medico?.id}`, {
+      await api.patch(`med/medico/${medico?.id}`, {
         nome: nome,
         valorConsulta: valorConsulta,
       });
@@ -74,7 +77,7 @@ export function Medico() {
     try {
       e.preventDefault();
       setExcluindo(true);
-      await api.delete(`api/medico/${medico?.id}`);
+      await api.delete(`med/medico/${medico?.id}`);
     } catch (error) {
       console.error("Error deleting medico:", error);
     } finally {
@@ -87,7 +90,7 @@ export function Medico() {
       e.preventDefault();
       setAtualizandoDisponibilidade(true);
       await api.patch(
-        `api/Medico/AtualizarDisponibilidade/${medico?.id}`,
+        `med/Medico/AtualizarDisponibilidade/${medico?.id}`,
         disponibilidade.filter((d) => d.horaInicio !== 0 && d.horaFim !== 0)
       );
       closeButtonRef.current?.click();
